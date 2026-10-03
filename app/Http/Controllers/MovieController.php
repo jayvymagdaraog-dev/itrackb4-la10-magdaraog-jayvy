@@ -10,46 +10,67 @@ class MovieController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-{
-    $genre = $request->query('genre', 'all');
-    $year = $request->query('year', 'all');
+    {
+        $genre = $request->query('genre', 'all');
+        $year = $request->query('year', 'all');
 
-    $movies = $this->movies();
+        $movies = $this->movies();
 
-    if ($genre !== 'all') {
-        $movies = array_filter($movies, fn($m) => str_contains($m['genre'], $genre));
+        if ($genre !== 'all') {
+            $movies = array_filter($movies, fn($m) => str_contains($m['genre'], $genre));
+        }
+
+        if ($year !== 'all') {
+            $movies = array_filter($movies, fn($m) => $m['year'] === (int) $year);
+        }
+
+        return view('movies.index', [
+            'movies' => $movies,
+            'genre' => $genre,
+            'year' => $year,
+        ]);
     }
 
-    if ($year !== 'all') {
-        $movies = array_filter($movies, fn($m) => $m['year'] === (int) $year);
-    }
-
-    return view('movies.index', [
-        'movies' => $movies,
-        'genre' => $genre,
-        'year' => $year,
-    ]);
-}
-    
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        //
+        return view('movies.create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        //
-    }
 
-    /**
-     * Display the specified resource.
-     */
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'title' => 'required|string|max:100',
+        'genre' => 'required|in:Action,Drama,Sci-Fi',
+        'rating' => 'required|numeric|min:0|max:10',
+        'year' => 'required|integer|min:1900|max:2030',
+    ]);
+
+    $movies = $this->movies();
+
+    $nextID = empty($movies) ? 1 : max(array_keys($movies)) + 1;
+
+    $movies[$nextID] = [
+        'id' => $nextID,
+        'title' => $validated['title'],
+        'genre' => $validated['genre'],
+        'rating' => (float) $validated['rating'],
+        'year' => (int) $validated['year'],
+    ];
+
+    $this->saveMovies($movies);
+
+    return redirect()
+        ->route('movies.index')
+        ->with('success', 'Movie added successfully');
+}
+
     public function show(string $id)
     {
         $movies = $this->movies();
@@ -119,13 +140,16 @@ class MovieController extends Controller
      */
     private function movies()
     {
-        return [
-            1 => ['id' => 1, 'title' => 'The Dark Knight', 'genre' => 'Action / Crime', 'rating' => 9.0, 'year' => 2008],
-            2 => ['id' => 2, 'title' => 'Inception', 'genre' => 'Sci-Fi / Thriller', 'rating' => 8.8, 'year' => 2010],
-            3 => ['id' => 3, 'title' => 'Interstellar', 'genre' => 'Sci-Fi / Drama', 'rating' => 8.7, 'year' => 2014],
-            4 => ['id' => 4, 'title' => 'Parasite', 'genre' => 'Thriller / Drama', 'rating' => 8.5, 'year' => 2019],
-            5 => ['id' => 5, 'title' => 'Avengers: Endgame', 'genre' => 'Action / Superhero', 'rating' => 8.4, 'year' => 2019],
-            6 => ['id' => 6, 'title' => 'The Matrix', 'genre' => 'Sci-Fi / Action', 'rating' => 8.7, 'year' => 1999],
-        ];
+        $path = storage_path('movies.json');
+
+        return json_decode(file_get_contents($path), true);
+    }
+
+    private function saveMovies(array $movies)
+    {
+        file_put_contents(
+            storage_path('movies.json'),
+            json_encode($movies, JSON_PRETTY_PRINT)
+        );
     }
 }
