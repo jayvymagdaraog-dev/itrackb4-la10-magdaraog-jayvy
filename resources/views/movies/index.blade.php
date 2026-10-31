@@ -13,20 +13,30 @@
         </a>
     </div>
 
-    <div class="mb-3">
-        <strong>Genre:</strong>
-        @foreach (['Action', 'Sci-Fi', 'Drama'] as $g)
-            <a href="{{ route('movies.index', ['genre' => $g, 'year' => $year]) }}"
-               class="btn btn-outline-primary btn-sm me-1">
-                {{ $g }}
-            </a>
-        @endforeach
-    </div>
+    <form action="{{ route('movies.index') }}" method="GET" class="mb-3">
+
+        <select name="genre_id" class="form-select w-auto">
+            <option value="">All Genres</option>
+
+            @foreach ($genres as $genre)
+                <option value="{{ $genre->id }}"
+                    @selected($genreId == $genre->id)>
+                    {{ $genre->name }}
+                </option>
+            @endforeach
+
+        </select>
+
+        <button type="submit" class="btn btn-primary btn-sm mt-2">
+            Filter
+        </button>
+
+    </form>
 
     <div class="mb-3">
         <strong>Year:</strong>
-        @foreach ([2008, 2010, 2014, 2019, 1999, 2012] as $y)
-            <a href="{{ route('movies.index', ['genre' => $genre, 'year' => $y]) }}"
+        @foreach ([2023, 2017, 2018, 2012, 2014] as $y)
+            <a href="{{ route('movies.index', ['genre_id' => $genreId, 'year' => $y]) }}"
                class="btn btn-outline-primary btn-sm me-1">
                 {{ $y }}
             </a>
@@ -52,17 +62,19 @@
             <tbody>
                 @forelse ($movies as $movie)
                     <tr>
-                        <td>{{ $movie['id'] }}</td>
+                        <td>{{ $movie->id }}</td>
                         <td>
-                            <a href="{{ route('movies.show', $movie['id']) }}">
-                                {{ $movie['title'] }}
+                            <a href="{{ route('movies.show', $movie->id) }}">
+                                {{ $movie->title }}
                             </a>
                         </td>
-                        <td>{{ $movie['genre'] }}</td>
-                        <td>{{ $movie['rating'] }}</td>
+
+                        <td>{{ $movie->genre->name }}</td>
+
+                        <td>{{ $movie->rating }}</td>
                         <td>
-                            {{ $movie['year'] }}
-                            @if ($movie['year'] >= 2020)
+                            {{ $movie->year }}
+                            @if ($movie->year >= 2020)
                                 <span class="badge bg-success">New Release</span>
                             @else
                                 <span class="badge bg-secondary">Classic</span>
@@ -84,5 +96,4 @@
         <p>Prepared by: Jayvy P. Magdaraog</p>
     </div>
 
-</div>
 @endsection

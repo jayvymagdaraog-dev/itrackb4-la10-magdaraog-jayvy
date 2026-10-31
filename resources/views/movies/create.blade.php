@@ -1,44 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Movie</title>
 
-@extends('layouts.app')
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
 
-@section('title', 'Add Movies')
+<div class="container mt-5">
+    <h1 class="mb-4">Jayvy Movie List</h1>
 
-@section('content')
-    <div class="card">
-        <div class="card-body">
-            <h3 class="card-title">
-                Add Movies
-            </h3>
+    <h2 class="mb-4">Add New Movie</h2>
 
-            <form method="POST" action="{{ route('movies.store') }}">
-                @csrf
-                <div class="form-group">
-                    <label for="title">Title</label>
-                    <input type="text" class="form-control" id="title" name="title" required>
-                    @error('title')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="genre">Genre</label>
-                    <input type="text" class="form-control" id="genre" name="genre" required>
-                    @error('genre')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="rating">Rating</label>
-                    <input type="number" class="form-control" id="rating" name="rating" step="0.1" min="0" max="10" required>
-                    @error('rating')
-                        <div class="text-danger">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="year">Year</label>
-                    <input type="number" class="form-control" id="year" name="year" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Movie</button>
-            </form>
+    <form action="{{ route('movies.store') }}" method="POST">
+        @csrf
+
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" name="title" id="title"
+                   class="form-control" placeholder="Enter movie title"
+                   value="{{ old('title') }}" required>
+            @error('title')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
         </div>
-    </div>
-@endsection
+
+        <div class="mb-3">
+            <label for="genre_id" class="form-label">Genre</label>
+            <select name="genre_id" id="genre_id" class="form-select" required>
+                <option value="">Select Genre</option>
+                @foreach ($genres as $genre)
+                    <option value="{{ $genre->id }}"
+                        @selected(old('genre_id') == $genre->id)>
+                        {{ $genre->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('genre_id')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="rating" class="form-label">Rating</label>
+            <input type="number" name="rating" id="rating"
+                   class="form-control" placeholder="Enter rating (0-10)"
+                   min="0" max="10" step="0.1"
+                   value="{{ old('rating') }}" required>
+            @error('rating')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="mb-3">
+            <label for="year" class="form-label">Year</label>
+            <input type="number" name="year" id="year"
+                   class="form-control" placeholder="Enter year"
+                   min="1900" max="2030"
+                   value="{{ old('year') }}" required>
+            @error('year')
+                <div class="text-danger">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Movie</button>
+        <a href="{{ route('movies.index') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+
+    <p class="mt-4">Prepared by: Jayvy P. Magdaraog</p>
+</div>
+
+</body>
+</html>
